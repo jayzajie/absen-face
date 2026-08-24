@@ -1,0 +1,5 @@
+<div class="table-wrap"><table><thead><tr><th>Karyawan</th><th>Perangkat</th><th>Tanggal</th><th>Jam</th><th>Jenis</th><th>Akses Foto</th><th>Status</th><th></th></tr></thead><tbody>
+@forelse($items as $item)
+<tr><td><div class="person"><div class="person-avatar">{{ strtoupper(substr($item->employee_name, 0, 2)) }}</div><b>{{ $item->employee_name }}</b></div></td><td>{{ $item->device_id }}</td><td>{{ $item->occurred_at->format('d M Y') }}</td><td>{{ $item->occurred_at->format('H:i') }} WITA</td><td>{{ ucfirst($item->type) }}</td><td><span class="badge {{ $item->photo_access_granted ? '' : 'warn' }}">{{ $item->photo_access_granted ? 'Diizinkan' : 'Belum' }}</span></td><td><span class="badge {{ $item->status === 'Terlambat' ? 'warn' : '' }}">{{ $item->status }}</span></td><td><form method="post" action="{{ route('attendances.destroy', $item) }}">@csrf @method('DELETE')<button class="delete" title="Hapus data">Hapus</button></form></td></tr>
+@empty<tr><td colspan="8" class="empty">Belum ada data absensi mobile.</td></tr>@endforelse
+</tbody></table></div>
