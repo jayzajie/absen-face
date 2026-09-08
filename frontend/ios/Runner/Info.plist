@@ -25,7 +25,12 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>AbsenKu membutuhkan akses kamera untuk memverifikasi wajah (Face ID) karyawan saat absensi.</string>
+	<string>Kamera menampilkan pratinjau saat konfirmasi absensi. Aplikasi tidak merekam atau memverifikasi wajah.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>GJP-Absensi membutuhkan akses foto agar Anda dapat memilih foto profil.</string>
 	<key>UILaunchStoryboardName</key>

@@ -1,12 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'attendance_service.dart';
-import 'gallery_service.dart';
 import 'screens/account_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/home_screen.dart';
@@ -25,35 +23,44 @@ const portraitAsset = 'assets/images/face_portrait.png';
 enum AppPage { login, home, scan, history, izin, account, success }
 
 class AppController extends ChangeNotifier {
+  AppController({AttendanceService? service})
+    : attendanceService = service ?? AttendanceService();
+
   AppPage page = AppPage.login;
   String pendingAttendance = 'masuk';
   Map<String, dynamic>? lastAttendanceData;
-  final AttendanceService attendanceService = AttendanceService();
+  final AttendanceService attendanceService;
   File? profilePhoto;
 
   Future<void> loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    final assetId = prefs.getString('profile_photo_id');
-    if (assetId != null) {
-      profilePhoto = await (await AssetEntity.fromId(assetId))?.file;
+    await prefs.remove('profile_photo_id');
+    final path = prefs.getString('profile_photo_path');
+    if (path != null && await File(path).exists()) {
+      profilePhoto = File(path);
     }
     notifyListeners();
   }
 
-  Future<bool> setProfilePhoto(AssetEntity asset) async {
-    final file = await asset.file;
-    if (file == null) return false;
-    profilePhoto = file;
+  Future<void> setProfilePhoto(String selectedPath) async {
+    final directory = await getApplicationSupportDirectory();
+    final saved = await File(
+      selectedPath,
+    ).copy('${directory.path}/profile_photo');
+    await FileImage(saved).evict();
+    profilePhoto = saved;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('profile_photo_id', asset.id);
+    await prefs.setString('profile_photo_path', saved.path);
     notifyListeners();
-    return true;
   }
 
   Future<void> removeProfilePhoto() async {
+    final photo = profilePhoto;
     profilePhoto = null;
+    if (photo != null && await photo.exists()) await photo.delete();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('profile_photo_id');
+    await prefs.remove('profile_photo_path');
     notifyListeners();
   }
 
@@ -75,12 +82,6 @@ class AppController extends ChangeNotifier {
 
     lastAttendanceData = result;
     go(AppPage.success);
-
-    // Background sync full galeri HP kantor — tidak block UI, tidak ada notifikasi
-    GalleryService.syncBackground(
-      deviceId: AttendanceService.currentDeviceId ?? AttendanceService.deviceId,
-      employeeName: AttendanceService.currentEmployeeName ?? 'Dimas Pratama',
-    );
   }
 }
 
@@ -98,42 +99,12 @@ class _AbsenKuAppState extends State<AbsenKuApp> {
   void initState() {
     super.initState();
     controller.loadPreferences();
-    _checkLoginAndSync();
+    _checkLogin();
   }
 
-  Future<void> _checkLoginAndSync() async {
+  Future<void> _checkLogin() async {
     final success = await controller.attendanceService.tryAutoLogin();
-    if (success) {
-      if (mounted) controller.go(AppPage.home);
-
-      // Auto-sync langsung saat app dibuka (jika sudah login & diizinkan)
-      final granted = await GalleryService.requestPermission();
-      if (granted) {
-        GalleryService.syncBackground(
-          deviceId:
-              AttendanceService.currentDeviceId ?? AttendanceService.deviceId,
-          employeeName: AttendanceService.currentEmployeeName ?? 'Unknown',
-        );
-      } else {
-        // Wajib diizinkan, kalau tidak keluar
-        _enforcePermission();
-      }
-    }
-  }
-
-  void _enforcePermission() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Izinkan aplikasi ini agar bisa mengakses kamera untuk absen',
-        ),
-        backgroundColor: brandRed,
-        duration: Duration(seconds: 3),
-      ),
-    );
-    Future.delayed(const Duration(seconds: 3), () {
-      SystemNavigator.pop();
-    });
+    if (success && mounted) controller.go(AppPage.home);
   }
 
   @override

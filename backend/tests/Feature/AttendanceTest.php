@@ -25,7 +25,7 @@ class AttendanceTest extends TestCase
             'device_id' => 'office-hp-001',
             'source' => 'mobile',
         ]);
-        $this->withBasicAuth('hr', 'testing-password')->get('/')
+        $this->withSession(['hr_authenticated' => true])->get('/')
             ->assertOk()
             ->assertSee('office-hp-001')
             ->assertSee('Diizinkan');
@@ -38,13 +38,13 @@ class AttendanceTest extends TestCase
 
     public function test_dashboard_rejects_unknown_hr_users(): void
     {
-        $this->get('/')->assertUnauthorized();
+        $this->get('/')->assertRedirect('/login');
     }
 
     public function test_every_navigation_page_is_available_to_hr(): void
     {
         foreach (['history' => 'Riwayat Absensi', 'employees' => 'Data Karyawan', 'devices' => 'Perangkat Kantor'] as $view => $title) {
-            $this->withBasicAuth('hr', 'testing-password')
+            $this->withSession(['hr_authenticated' => true])
                 ->get('/?view='.$view)
                 ->assertOk()
                 ->assertSee($title);

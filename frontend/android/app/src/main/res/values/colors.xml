@@ -1,0 +1,11 @@
+<resources>
+    <color name="brand">#2F88BE</color>
+    <color name="brand_dark">#236C98</color>
+    <color name="brand_red">#CF403B</color>
+    <color name="ink">#17222B</color>
+    <color name="muted">#687782</color>
+    <color name="border">#DCE7ED</color>
+    <color name="background">#F7FAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="tint">#E7F2F8</color>
+</resources>

@@ -2,14 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AttendanceService {
-  static const apiUrl = String.fromEnvironment(
+  static const configuredApiUrl = String.fromEnvironment(
     'API_URL',
-    defaultValue: 'http://10.0.2.2:8000/api',
+    defaultValue: '',
   );
+  static String get apiUrl => configuredApiUrl.isNotEmpty
+      ? configuredApiUrl
+      : !kIsWeb && Platform.isAndroid
+      ? 'http://10.0.2.2:8000/api'
+      : 'http://localhost:8000/api';
   static const deviceToken = String.fromEnvironment(
     'MOBILE_API_TOKEN',
     defaultValue: 'office-device-dev-key',
@@ -38,14 +44,19 @@ class AttendanceService {
   }
 
   Future<void> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('$apiUrl/mobile/login'),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'username': username, 'password': password}),
-    );
+    final response = await http
+        .post(
+          Uri.parse('$apiUrl/mobile/login'),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({'username': username, 'password': password}),
+        )
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw Exception('Server tidak merespons.'),
+        );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -77,20 +88,25 @@ class AttendanceService {
     String type, {
     required bool cameraAccessGranted,
   }) async {
-    final response = await http.post(
-      Uri.parse('$apiUrl/attendances'),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $deviceToken',
-      },
-      body: jsonEncode({
-        'employee_name': currentEmployeeName ?? 'Unknown',
-        'type': type,
-        'device_id': currentDeviceId ?? deviceId, // Fallback if missing
-        'camera_access_granted': cameraAccessGranted,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('$apiUrl/attendances'),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $deviceToken',
+          },
+          body: jsonEncode({
+            'employee_name': currentEmployeeName ?? 'Unknown',
+            'type': type,
+            'device_id': currentDeviceId ?? deviceId, // Fallback if missing
+            'camera_access_granted': cameraAccessGranted,
+          }),
+        )
+        .timeout(
+          const Duration(seconds: 15),
+          onTimeout: () => throw Exception('Server tidak merespons.'),
+        );
 
     if (response.statusCode == 201) {
       return jsonDecode(response.body);

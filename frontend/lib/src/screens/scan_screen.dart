@@ -16,16 +16,16 @@ class _ScanScreenState extends State<ScanScreen> {
   CameraController? camera;
   String? cameraError;
   bool sending = false;
+  bool startingCamera = false;
 
   bool get cameraReady => camera?.value.isInitialized ?? false;
 
-  @override
-  void initState() {
-    super.initState();
-    _startCamera();
-  }
-
   Future<void> _startCamera() async {
+    setState(() {
+      startingCamera = true;
+      cameraError = null;
+    });
+    CameraController? pendingCamera;
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
@@ -40,6 +40,7 @@ class _ScanScreenState extends State<ScanScreen> {
         ResolutionPreset.high,
         enableAudio: false,
       );
+      pendingCamera = controller;
       await controller.initialize();
       if (!mounted) {
         await controller.dispose();
@@ -48,15 +49,19 @@ class _ScanScreenState extends State<ScanScreen> {
       camera = controller;
       setState(() {});
     } on CameraException catch (error) {
+      await pendingCamera?.dispose();
       if (mounted) setState(() => cameraError = _cameraMessage(error.code));
     } catch (_) {
+      await pendingCamera?.dispose();
       if (mounted) setState(() => cameraError = 'Kamera tidak dapat digunakan');
+    } finally {
+      if (mounted) setState(() => startingCamera = false);
     }
   }
 
   String _cameraMessage(String code) => switch (code) {
     'CameraAccessDenied' || 'CameraAccessDeniedWithoutPrompt' =>
-      'Izin kamera diperlukan untuk melakukan absensi',
+      'Izin kamera ditolak. Anda tetap dapat konfirmasi absensi.',
     _ => 'Kamera tidak dapat digunakan',
   };
 
@@ -89,7 +94,7 @@ class _ScanScreenState extends State<ScanScreen> {
         children: [
           const StatusBar(),
           ScreenTitle(
-            title: 'Scan Face ID',
+            title: 'Konfirmasi Absensi',
             onBack: () => widget.controller.go(AppPage.home),
           ),
           Expanded(
@@ -101,7 +106,7 @@ class _ScanScreenState extends State<ScanScreen> {
                   left: 0,
                   right: 0,
                   child: Text(
-                    'Posisikan wajah Anda di dalam bingkai',
+                    'Pratinjau kamera • tidak merekam foto atau video',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -152,7 +157,9 @@ class _ScanScreenState extends State<ScanScreen> {
                   left: 20,
                   right: 20,
                   bottom: 20,
-                  child: CustomPaint(painter: _FaceFramePainter()),
+                  child: IgnorePointer(
+                    child: CustomPaint(painter: _FaceFramePainter()),
+                  ),
                 ),
               ],
             ),
@@ -179,8 +186,8 @@ class _ScanScreenState extends State<ScanScreen> {
                       child: Text(
                         cameraError ??
                             (cameraReady
-                                ? 'Kamera siap untuk absensi realtime'
-                                : 'Menyiapkan kamera...'),
+                                ? 'Kamera aktif. Konfirmasi untuk mencatat kehadiran.'
+                                : 'Pratinjau opsional. Absensi dapat dilanjutkan tanpa kamera.'),
                         style: TextStyle(
                           fontSize: 12,
                           color: cameraError == null ? muted : Colors.red,
@@ -198,9 +205,11 @@ class _ScanScreenState extends State<ScanScreen> {
                       color: muted,
                     ),
                     SizedBox(width: 10),
-                    Text(
-                      'Pastikan wajah terlihat dan pencahayaan cukup',
-                      style: TextStyle(fontSize: 11, color: muted),
+                    Expanded(
+                      child: Text(
+                        'Tidak ada pencocokan atau verifikasi wajah',
+                        style: TextStyle(fontSize: 11, color: muted),
+                      ),
                     ),
                   ],
                 ),
@@ -208,10 +217,8 @@ class _ScanScreenState extends State<ScanScreen> {
                 PrimaryButton(
                   label: sending
                       ? 'Mengirim...'
-                      : cameraReady
-                      ? 'Konfirmasi ${widget.controller.pendingAttendance == 'masuk' ? 'Masuk' : 'Pulang'}'
-                      : 'Menunggu kamera',
-                  onPressed: cameraReady && !sending ? _confirm : () {},
+                      : 'Konfirmasi ${widget.controller.pendingAttendance == 'masuk' ? 'Masuk' : 'Pulang'}',
+                  onPressed: !sending ? _confirm : () {},
                 ),
               ],
             ),
@@ -226,15 +233,12 @@ class _ScanScreenState extends State<ScanScreen> {
       return Container(
         color: const Color(0xFF202522),
         child: Center(
-          child: cameraError == null
+          child: startingCamera
               ? const CircularProgressIndicator(color: Colors.white)
-              : IconButton(
+              : FilledButton.icon(
                   onPressed: _startCamera,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.white,
-                    size: 34,
-                  ),
+                  icon: const Icon(Icons.videocam_outlined),
+                  label: const Text('Aktifkan pratinjau (opsional)'),
                 ),
         ),
       );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,101 +17,21 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   Future<void> _choosePhoto() async {
-    final permission = await PhotoManager.requestPermissionExtend();
-    if (!permission.hasAccess) {
+    try {
+      final photo = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        requestFullMetadata: false,
+      );
+      if (photo == null) return;
+      await widget.controller.setProfilePhoto(photo.path);
+      if (mounted) setState(() {});
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Izinkan akses foto untuk mengganti foto profil.'),
-          ),
+          const SnackBar(content: Text('Foto tidak dapat dipilih. Coba lagi.')),
         );
       }
-      return;
     }
-
-    final albums = await PhotoManager.getAssetPathList(
-      type: RequestType.image,
-      onlyAll: true,
-    );
-    final photos = albums.isEmpty
-        ? <AssetEntity>[]
-        : await albums.first.getAssetListPaged(page: 0, size: 60);
-    if (!mounted) return;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) => SafeArea(
-        child: SizedBox(
-          height: 460,
-          child: Column(
-            children: [
-              const Text(
-                'Pilih Foto Profil',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              if (photos.isEmpty)
-                const Expanded(
-                  child: Center(child: Text('Belum ada foto di perangkat.')),
-                )
-              else
-                Expanded(
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(12),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 6,
-                          crossAxisSpacing: 6,
-                        ),
-                    itemCount: photos.length,
-                    itemBuilder: (_, index) => FutureBuilder(
-                      future: photos[index].thumbnailDataWithSize(
-                        const ThumbnailSize.square(240),
-                      ),
-                      builder: (_, snapshot) => InkWell(
-                        onTap: snapshot.data == null
-                            ? null
-                            : () async {
-                                final saved = await widget.controller
-                                    .setProfilePhoto(photos[index]);
-                                if (sheetContext.mounted && saved) {
-                                  Navigator.pop(sheetContext);
-                                }
-                              },
-                        child: snapshot.data == null
-                            ? const ColoredBox(
-                                color: Color(0xFFE7F2F8),
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            : Image.memory(snapshot.data!, fit: BoxFit.cover),
-                      ),
-                    ),
-                  ),
-                ),
-              if (widget.controller.profilePhoto != null)
-                TextButton.icon(
-                  onPressed: () async {
-                    await widget.controller.removeProfilePhoto();
-                    if (sheetContext.mounted) Navigator.pop(sheetContext);
-                  },
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    color: brandRed,
-                  ),
-                  label: const Text(
-                    'Hapus foto saat ini',
-                    style: TextStyle(color: brandRed),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Future<void> _logout() async {
@@ -197,6 +117,14 @@ class _AccountScreenState extends State<AccountScreen> {
                                 : 'Ganti foto profil',
                           ),
                         ),
+                        if (widget.controller.profilePhoto != null)
+                          TextButton(
+                            onPressed: () async {
+                              await widget.controller.removeProfilePhoto();
+                              if (mounted) setState(() {});
+                            },
+                            child: const Text('Hapus foto profil'),
+                          ),
                       ],
                     ),
                   ),
@@ -217,7 +145,7 @@ class _AccountScreenState extends State<AccountScreen> {
                             color: green,
                           ),
                           title: const Text('Izin aplikasi'),
-                          subtitle: const Text('Kelola akses kamera dan foto'),
+                          subtitle: const Text('Kelola akses kamera'),
                           trailing: const Icon(Icons.chevron_right_rounded),
                         ),
                         const Divider(height: 1, color: border),
@@ -239,7 +167,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                           title: Text('Privasi & keamanan'),
                           subtitle: Text(
-                            'Data wajah digunakan hanya untuk verifikasi absensi',
+                            'Kamera hanya pratinjau, tanpa verifikasi wajah. Foto profil pilihan Anda disimpan lokal.',
                           ),
                         ),
                       ],

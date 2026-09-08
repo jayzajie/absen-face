@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" style="@style/Screen">
+    <ImageView android:id="@+id/company_logo" style="@style/Body"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" android:layout_width="@dimen/logo_width" android:layout_height="@dimen/logo_height" android:src="@drawable/company_logo" android:scaleType="fitCenter" android:contentDescription="@string/logo_description" />
+    <TextView android:id="@+id/welcome" style="@style/Muted" android:text="@string/welcome"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/company_logo" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/employee_name" style="@style/Title" android:text="@string/employee_default"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/welcome" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/home_title" style="@style/Section" android:text="@string/home_title"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/employee_name" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/today_date" style="@style/Muted"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/home_title" android:layout_marginTop="@dimen/space_medium" tools:text="Selasa, 8 September 2026" />
+    <TextView android:id="@+id/summary_text" style="@style/Body" android:text="@string/summary_empty"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/today_date" android:layout_marginTop="@dimen/space_medium" android:background="@drawable/card" />
+    <Button android:id="@+id/check_in" style="@style/Action" android:text="@string/check_in"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/summary_text" android:layout_marginTop="@dimen/space_medium"  />
+    <Button android:id="@+id/check_out" style="@style/SecondaryAction" android:text="@string/check_out"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/check_in" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/home_note" style="@style/Muted" android:text="@string/home_note"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/check_out" android:layout_marginTop="@dimen/space_medium"  />
+</androidx.constraintlayout.widget.ConstraintLayout>

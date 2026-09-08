@@ -1,0 +1,17 @@
+<resources>
+    <dimen name="space_small">8dp</dimen>
+    <dimen name="space_medium">16dp</dimen>
+    <dimen name="space_large">24dp</dimen>
+    <dimen name="screen_padding">20dp</dimen>
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="action_height">52dp</dimen>
+    <dimen name="title_size">24sp</dimen>
+    <dimen name="section_size">18sp</dimen>
+    <dimen name="body_size">16sp</dimen>
+    <dimen name="secondary_size">14sp</dimen>
+    <dimen name="corner_radius">12dp</dimen>
+    <dimen name="logo_width">160dp</dimen>
+    <dimen name="logo_height">96dp</dimen>
+    <dimen name="profile_size">88dp</dimen>
+    <dimen name="camera_height">300dp</dimen>
+</resources>

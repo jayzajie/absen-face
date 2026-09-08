@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="@dimen/space_small" android:background="@drawable/card">
+    <TextView android:id="@+id/row_kind" style="@style/Section"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" tools:text="Absen Masuk" />
+    <TextView android:id="@+id/row_time" style="@style/Muted"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/row_kind" android:layout_marginTop="@dimen/space_medium" tools:text="8 September 2026, 09.00" />
+    <TextView android:id="@+id/row_status" style="@style/Body"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/row_time" android:layout_marginTop="@dimen/space_medium" tools:text="Tercatat" />
+</androidx.constraintlayout.widget.ConstraintLayout>

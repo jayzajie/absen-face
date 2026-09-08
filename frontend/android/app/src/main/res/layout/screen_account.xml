@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" style="@style/Screen">
+    <TextView android:id="@+id/account_title" style="@style/Title" android:text="@string/account_title"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"  />
+    <ImageView android:id="@+id/profile_photo" style="@style/Body"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/account_title" android:layout_marginTop="@dimen/space_medium" android:layout_width="@dimen/profile_size" android:layout_height="@dimen/profile_size" android:src="@drawable/profile_placeholder" android:scaleType="centerCrop" android:contentDescription="@string/profile_description" />
+    <TextView android:id="@+id/employee_name" style="@style/Section" android:text="@string/employee_default"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profile_photo" android:layout_marginTop="@dimen/space_medium" android:gravity="center" />
+    <Button android:id="@+id/choose_photo" style="@style/SecondaryAction" android:text="@string/choose_photo"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/employee_name" android:layout_marginTop="@dimen/space_medium"  />
+    <Button android:id="@+id/remove_photo" style="@style/SecondaryAction" android:text="@string/remove_photo"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/choose_photo" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/device_label" style="@style/Section" android:text="@string/device_label"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/remove_photo" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/device_name" style="@style/Muted" android:text="@string/device_unknown"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/device_label" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/privacy_title" style="@style/Section" android:text="@string/privacy_title"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/device_name" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/privacy_note" style="@style/Muted" android:text="@string/privacy_note"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/privacy_title" android:layout_marginTop="@dimen/space_medium" android:background="@drawable/card" />
+    <Button android:id="@+id/app_settings" style="@style/SecondaryAction" android:text="@string/app_settings"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/privacy_note" android:layout_marginTop="@dimen/space_medium"  />
+    <Button android:id="@+id/logout" style="@style/SecondaryAction" android:text="@string/logout"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/app_settings" android:layout_marginTop="@dimen/space_medium" android:textColor="@color/brand_red" />
+</androidx.constraintlayout.widget.ConstraintLayout>

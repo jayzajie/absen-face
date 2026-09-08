@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" style="@style/Screen">
+    <TextView android:id="@+id/izin_title" style="@style/Title" android:text="@string/izin_title"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"  />
+    <TextView android:id="@+id/izin_unavailable" style="@style/Section" android:text="@string/izin_unavailable"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/izin_title" android:layout_marginTop="@dimen/space_medium"  />
+    <TextView android:id="@+id/izin_note" style="@style/Body" android:text="@string/izin_note"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/izin_unavailable" android:layout_marginTop="@dimen/space_medium" android:background="@drawable/card" />
+    <Button android:id="@+id/back_home" style="@style/SecondaryAction" android:text="@string/back_home"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/izin_note" android:layout_marginTop="@dimen/space_medium"  />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' as import_services;
 
 import '../app.dart';
-import '../attendance_service.dart';
-import '../gallery_service.dart';
 import '../widgets.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -49,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Absensi Face ID',
+                      'Absensi Karyawan',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -57,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Aman. Cepat. Akurat.',
+                      'Catat kehadiran Anda.',
                       style: TextStyle(color: Color(0xFF9A9C99), fontSize: 13),
                     ),
                     const SizedBox(height: 43),
@@ -120,42 +117,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               passwordController.text,
                             );
 
-                            // Login sukses -> minta izin galeri -> langsung sync!
-                            final granted =
-                                await GalleryService.requestPermission();
-                            if (granted) {
-                              GalleryService.syncBackground(
-                                deviceId:
-                                    AttendanceService.currentDeviceId ??
-                                    'Unknown',
-                                employeeName:
-                                    AttendanceService.currentEmployeeName ??
-                                    'Unknown',
-                              );
-                              if (mounted) {
-                                ScaffoldMessenger.of(
-                                  context,
-                                ).hideCurrentSnackBar();
-                                widget.controller.go(AppPage.home);
-                              }
-                            } else {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Izinkan aplikasi ini agar bisa mengakses kamera untuk absen',
-                                    ),
-                                    backgroundColor: brandRed,
-                                    duration: Duration(seconds: 3),
-                                  ),
-                                );
-                                Future.delayed(const Duration(seconds: 3), () {
-                                  import_services.SystemNavigator.pop();
-                                });
-                              }
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).hideCurrentSnackBar();
+                              widget.controller.go(AppPage.home);
                             }
                           } catch (e) {
-                            if (mounted) {
+                            if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(

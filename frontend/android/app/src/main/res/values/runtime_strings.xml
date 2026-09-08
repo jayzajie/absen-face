@@ -1,0 +1,5 @@
+<resources>
+    <string name="camera_starting">Menyiapkan kamera…</string>
+    <string name="camera_failed">Kamera tidak dapat digunakan. Coba lagi atau kembali ke beranda.</string>
+    <string name="request_timeout">Koneksi terputus. Permintaan mungkin sudah diterima server; periksa ke admin sebelum mengirim ulang.</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools" style="@style/Screen">
+    <TextView android:id="@+id/scan_title" style="@style/Title" android:text="@string/scan_title"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"  />
+    <TextView android:id="@+id/camera_disclosure" style="@style/Muted" android:text="@string/camera_disclosure"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scan_title" android:layout_marginTop="@dimen/space_medium"  />
+    <androidx.camera.view.PreviewView android:id="@+id/camera_preview" style="@style/Body"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/camera_disclosure" android:layout_marginTop="@dimen/space_medium" android:layout_height="@dimen/camera_height" android:background="@color/ink" android:importantForAccessibility="no" />
+    <TextView android:id="@+id/camera_status" style="@style/Body" android:text="@string/camera_idle"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/camera_preview" android:layout_marginTop="@dimen/space_medium" android:accessibilityLiveRegion="polite" />
+    <Button android:id="@+id/enable_camera" style="@style/Action" android:text="@string/enable_camera"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/camera_status" android:layout_marginTop="@dimen/space_medium"  />
+    <Button android:id="@+id/confirm_attendance" style="@style/Action" android:text="@string/confirm_attendance"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/enable_camera" android:layout_marginTop="@dimen/space_medium" />
+    <Button android:id="@+id/back_home" style="@style/SecondaryAction" android:text="@string/back_home"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/confirm_attendance" android:layout_marginTop="@dimen/space_medium"  />
+</androidx.constraintlayout.widget.ConstraintLayout>
