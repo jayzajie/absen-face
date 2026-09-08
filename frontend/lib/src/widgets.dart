@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'app.dart';
@@ -27,6 +29,30 @@ class StatusBar extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    ),
+  );
+}
+
+class ProfileAvatar extends StatelessWidget {
+  const ProfileAvatar({super.key, this.file, this.size = 50});
+  final File? file;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: const Color(0xFFE4F1F8),
+      shape: BoxShape.circle,
+      border: Border.all(color: border, width: 2),
+      image: DecorationImage(
+        image: file == null
+            ? const AssetImage(portraitAsset)
+            : FileImage(file!),
+        fit: BoxFit.cover,
+        alignment: const Alignment(0, -.3),
       ),
     ),
   );
@@ -134,7 +160,7 @@ class AppBottomBar extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     height: 72,
     decoration: const BoxDecoration(
-      color: Colors.white,
+      color: Color(0xFFFFFFFF),
       border: Border(top: BorderSide(color: border)),
     ),
     child: Row(
@@ -189,7 +215,7 @@ class SectionCard extends StatelessWidget {
     width: double.infinity,
     padding: padding,
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: const Color(0xFFFFFFFF),
       border: Border.all(color: border),
       borderRadius: BorderRadius.circular(8),
     ),

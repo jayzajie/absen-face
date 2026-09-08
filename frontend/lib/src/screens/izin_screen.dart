@@ -26,11 +26,18 @@ class IzinScreen extends StatelessWidget {
                   SectionCard(
                     child: Column(
                       children: [
-                        const Icon(Icons.beach_access_rounded, size: 48, color: green),
+                        const Icon(
+                          Icons.beach_access_rounded,
+                          size: 48,
+                          color: green,
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           'Fitur Izin Belum Tersedia',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         const Text(

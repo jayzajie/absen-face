@@ -29,7 +29,7 @@ class SuccessScreen extends StatelessWidget {
 
     final isLate = data['is_late'] as bool? ?? false;
     final diffMins = (data['diff_minutes'] as num?)?.toInt().abs() ?? 0;
-    
+
     final checkInTime = data['check_in_time'] as String?;
 
     return Scaffold(
@@ -52,7 +52,11 @@ class SuccessScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Icon(Icons.signal_cellular_alt, size: 15, color: Colors.white),
+                      Icon(
+                        Icons.signal_cellular_alt,
+                        size: 15,
+                        color: Colors.white,
+                      ),
                       SizedBox(width: 4),
                       Icon(Icons.wifi, size: 15, color: Colors.white),
                       SizedBox(width: 4),
@@ -83,7 +87,9 @@ class SuccessScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      isMasuk ? 'Absen Masuk Berhasil!' : 'Absen Pulang Berhasil!',
+                      isMasuk
+                          ? 'Absen Masuk Berhasil!'
+                          : 'Absen Pulang Berhasil!',
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -108,13 +114,27 @@ class SuccessScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           if (isMasuk) ...[
-                            _infoRow('Status', isLate ? 'Terlambat' : 'Tepat Waktu', isLate ? const Color(0xFFB63F45) : green),
+                            _infoRow(
+                              'Status',
+                              isLate ? 'Terlambat' : 'Tepat Waktu',
+                              isLate ? brandRed : green,
+                            ),
                             const Divider(height: 24, color: border),
-                            _infoRow('Selisih Waktu', isLate ? 'Telat $diffMins menit' : 'Lebih cepat $diffMins menit', ink),
+                            _infoRow(
+                              'Selisih Waktu',
+                              isLate
+                                  ? 'Telat $diffMins menit'
+                                  : 'Lebih cepat $diffMins menit',
+                              ink,
+                            ),
                             const Divider(height: 24, color: border),
                             _infoRow('Target Jam', '09:00 WIB', muted),
                           ] else ...[
-                            _infoRow('Absen Masuk', checkInTime ?? '--:--', ink),
+                            _infoRow(
+                              'Absen Masuk',
+                              checkInTime ?? '--:--',
+                              ink,
+                            ),
                             const Divider(height: 24, color: border),
                             _infoRow('Absen Keluar', timeStr, green),
                           ],

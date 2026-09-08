@@ -58,35 +58,23 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Selamat pagi,', style: TextStyle(fontSize: 14, color: muted)),
+            const Text(
+              'Selamat pagi,',
+              style: TextStyle(fontSize: 14, color: muted),
+            ),
             const SizedBox(height: 3),
             Text(
               AttendanceService.currentEmployeeName ?? 'Karyawan',
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 2),
-            const Text(
-              'Staff',
-              style: TextStyle(fontSize: 13, color: muted),
-            ),
+            const Text('Staff', style: TextStyle(fontSize: 13, color: muted)),
           ],
         ),
       ),
       const Icon(Icons.notifications_none_rounded, size: 23),
       const SizedBox(width: 16),
-      Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: border),
-          image: const DecorationImage(
-            image: AssetImage(portraitAsset),
-            fit: BoxFit.cover,
-            alignment: Alignment(0, -.6),
-          ),
-        ),
-      ),
+      ProfileAvatar(file: controller.profilePhoto),
     ],
   );
 
@@ -284,7 +272,7 @@ class HomeScreen extends StatelessWidget {
           width: 96,
           height: 76,
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F2ED),
+            color: const Color(0xFFE7F2F8),
             borderRadius: BorderRadius.circular(7),
           ),
           child: CustomPaint(painter: _MapPainter()),
@@ -342,7 +330,7 @@ class _MapPainter extends CustomPainter {
       Offset(s.width, s.height * .3),
       road,
     );
-    final pin = Paint()..color = const Color(0xFF1675C1);
+    final pin = Paint()..color = brandRed;
     canvas.drawCircle(Offset(s.width * .55, s.height * .48), 9, pin);
     canvas.drawCircle(
       Offset(s.width * .55, s.height * .48),

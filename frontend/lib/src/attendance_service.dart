@@ -44,17 +44,14 @@ class AttendanceService {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-      }),
+      body: jsonEncode({'username': username, 'password': password}),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       currentEmployeeName = data['name'];
       await initDevice(); // Pastikan device terdeteksi
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('emp_username', username);
       await prefs.setString('emp_password', password);
@@ -76,7 +73,10 @@ class AttendanceService {
     return false;
   }
 
-  Future<Map<String, dynamic>> record(String type, {required bool cameraAccessGranted}) async {
+  Future<Map<String, dynamic>> record(
+    String type, {
+    required bool cameraAccessGranted,
+  }) async {
     final response = await http.post(
       Uri.parse('$apiUrl/attendances'),
       headers: {

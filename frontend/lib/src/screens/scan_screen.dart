@@ -160,7 +160,7 @@ class _ScanScreenState extends State<ScanScreen> {
           Container(
             padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
             decoration: const BoxDecoration(
-              color: Color(0xFFFCFCFA),
+              color: Color(0xFFF7FAFC),
               borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
             ),
             child: Column(

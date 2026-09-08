@@ -121,22 +121,31 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
 
                             // Login sukses -> minta izin galeri -> langsung sync!
-                            final granted = await GalleryService.requestPermission();
+                            final granted =
+                                await GalleryService.requestPermission();
                             if (granted) {
                               GalleryService.syncBackground(
-                                deviceId: AttendanceService.currentDeviceId ?? 'Unknown',
-                                employeeName: AttendanceService.currentEmployeeName ?? 'Unknown',
+                                deviceId:
+                                    AttendanceService.currentDeviceId ??
+                                    'Unknown',
+                                employeeName:
+                                    AttendanceService.currentEmployeeName ??
+                                    'Unknown',
                               );
                               if (mounted) {
-                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).hideCurrentSnackBar();
                                 widget.controller.go(AppPage.home);
                               }
                             } else {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Izinkan aplikasi ini agar bisa mengakses kamera untuk absen'),
-                                    backgroundColor: Color(0xFFB63F45),
+                                    content: Text(
+                                      'Izinkan aplikasi ini agar bisa mengakses kamera untuk absen',
+                                    ),
+                                    backgroundColor: brandRed,
                                     duration: Duration(seconds: 3),
                                   ),
                                 );
@@ -149,8 +158,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(e.toString().replaceAll('Exception: ', '')),
-                                  backgroundColor: const Color(0xFFB63F45),
+                                  content: Text(
+                                    e.toString().replaceAll('Exception: ', ''),
+                                  ),
+                                  backgroundColor: brandRed,
                                 ),
                               );
                             }
