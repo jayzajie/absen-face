@@ -74,10 +74,14 @@ class AppController extends ChangeNotifier {
     go(AppPage.scan);
   }
 
-  Future<void> submitAttendance({required bool cameraAccessGranted}) async {
+  Future<void> submitAttendance({
+    required List<int> selfieBytes,
+    required String selfieName,
+  }) async {
     final result = await attendanceService.record(
       pendingAttendance,
-      cameraAccessGranted: cameraAccessGranted,
+      selfieBytes: selfieBytes,
+      selfieName: selfieName,
     );
 
     lastAttendanceData = result;
@@ -99,12 +103,6 @@ class _AbsenKuAppState extends State<AbsenKuApp> {
   void initState() {
     super.initState();
     controller.loadPreferences();
-    _checkLogin();
-  }
-
-  Future<void> _checkLogin() async {
-    final success = await controller.attendanceService.tryAutoLogin();
-    if (success && mounted) controller.go(AppPage.home);
   }
 
   @override

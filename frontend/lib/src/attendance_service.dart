@@ -16,10 +16,6 @@ class AttendanceService {
       : !kIsWeb && Platform.isAndroid
       ? 'http://10.0.2.2:8000/api'
       : 'http://localhost:8000/api';
-  static const deviceToken = String.fromEnvironment(
-    'MOBILE_API_TOKEN',
-    defaultValue: 'office-device-dev-key',
-  );
   static const deviceId = String.fromEnvironment(
     'DEVICE_ID',
     defaultValue: 'office-hp-001',
@@ -27,6 +23,7 @@ class AttendanceService {
 
   static String? currentEmployeeName;
   static String? currentDeviceId;
+  static String? currentEmployeeToken;
 
   static Future<void> initDevice() async {
     try {
@@ -43,7 +40,12 @@ class AttendanceService {
     }
   }
 
-  Future<void> login(String username, String password) async {
+  Future<void> login(
+    String username,
+    String password, {
+    bool rememberUsername = false,
+  }) async {
+    await initDevice();
     final response = await http
         .post(
           Uri.parse('$apiUrl/mobile/login'),
@@ -51,7 +53,11 @@ class AttendanceService {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
-          body: jsonEncode({'username': username, 'password': password}),
+          body: jsonEncode({
+            'username': username,
+            'password': password,
+            'device_id': currentDeviceId ?? deviceId,
+          }),
         )
         .timeout(
           const Duration(seconds: 15),
@@ -61,57 +67,64 @@ class AttendanceService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       currentEmployeeName = data['name'];
-      await initDevice(); // Pastikan device terdeteksi
+      currentEmployeeToken = data['token'];
+      if (currentEmployeeToken == null) {
+        throw Exception('Token login tidak diterima dari server.');
+      }
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('emp_username', username);
-      await prefs.setString('emp_password', password);
+      await prefs.remove('emp_password');
+      if (rememberUsername) {
+        await prefs.setString('emp_username', username);
+      } else {
+        await prefs.remove('emp_username');
+      }
     } else {
       throw Exception('Username atau password salah.');
     }
   }
 
-  Future<bool> tryAutoLogin() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final u = prefs.getString('emp_username');
-      final p = prefs.getString('emp_password');
-      if (u != null && p != null) {
-        await login(u, p);
-        return true;
-      }
-    } catch (_) {}
-    return false;
+  Future<String?> rememberedUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('emp_password');
+    return prefs.getString('emp_username');
   }
 
   Future<Map<String, dynamic>> record(
     String type, {
-    required bool cameraAccessGranted,
+    required List<int> selfieBytes,
+    required String selfieName,
   }) async {
-    final response = await http
-        .post(
-          Uri.parse('$apiUrl/attendances'),
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $deviceToken',
-          },
-          body: jsonEncode({
-            'employee_name': currentEmployeeName ?? 'Unknown',
-            'type': type,
-            'device_id': currentDeviceId ?? deviceId, // Fallback if missing
-            'camera_access_granted': cameraAccessGranted,
-          }),
-        )
-        .timeout(
-          const Duration(seconds: 15),
-          onTimeout: () => throw Exception('Server tidak merespons.'),
-        );
+    if (currentEmployeeToken == null) {
+      throw Exception('Sesi berakhir. Silakan login kembali.');
+    }
+    final request =
+        http.MultipartRequest('POST', Uri.parse('$apiUrl/attendances/verify'))
+          ..headers['Accept'] = 'application/json'
+          ..headers['Authorization'] = 'Bearer $currentEmployeeToken'
+          ..fields['type'] = type
+          ..fields['device_id'] = currentDeviceId ?? deviceId
+          ..files.add(
+            http.MultipartFile.fromBytes(
+              'selfie',
+              selfieBytes,
+              filename: selfieName,
+            ),
+          );
+
+    final streamed = await request.send().timeout(
+      const Duration(seconds: 40),
+      onTimeout: () => throw Exception('Server tidak merespons.'),
+    );
+    final response = await http.Response.fromStream(streamed);
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
 
     if (response.statusCode == 201) {
-      return jsonDecode(response.body);
+      return data;
     } else {
-      throw Exception('Server menolak absensi (${response.statusCode})');
+      throw Exception(
+        data['message'] ?? 'Server menolak absensi (${response.statusCode})',
+      );
     }
   }
 }

@@ -19,6 +19,21 @@ class _LoginScreenState extends State<LoginScreen> {
   bool remember = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadRememberedUsername();
+  }
+
+  Future<void> _loadRememberedUsername() async {
+    final username = await widget.controller.attendanceService
+        .rememberedUsername();
+    if (username != null && mounted) {
+      identityController.text = username;
+      setState(() => remember = true);
+    }
+  }
+
+  @override
   void dispose() {
     identityController.dispose();
     passwordController.dispose();
@@ -115,6 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             await widget.controller.attendanceService.login(
                               identityController.text.trim(),
                               passwordController.text,
+                              rememberUsername: remember,
                             );
 
                             if (context.mounted) {

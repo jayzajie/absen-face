@@ -31,6 +31,8 @@ class SuccessScreen extends StatelessWidget {
     final diffMins = (data['diff_minutes'] as num?)?.toInt().abs() ?? 0;
 
     final checkInTime = data['check_in_time'] as String?;
+    final faceScore = (data['face_match_score'] as num?)?.toDouble();
+    final faceThreshold = (data['face_threshold'] as num?)?.toDouble();
 
     return Scaffold(
       backgroundColor: green,
@@ -137,6 +139,14 @@ class SuccessScreen extends StatelessWidget {
                             ),
                             const Divider(height: 24, color: border),
                             _infoRow('Absen Keluar', timeStr, green),
+                          ],
+                          if (faceScore != null && faceThreshold != null) ...[
+                            const Divider(height: 24, color: border),
+                            _infoRow(
+                              'Kemiripan wajah',
+                              '${faceScore.toStringAsFixed(3)} / ${faceThreshold.toStringAsFixed(3)}',
+                              green,
+                            ),
                           ],
                         ],
                       ),

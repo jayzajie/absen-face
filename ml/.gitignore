@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+models/
+synthetic_face_dataset/
+synthetic_face_dataset.zip

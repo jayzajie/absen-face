@@ -2,13 +2,15 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GalleryController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth (tanpa middleware, publik) ─────────────────
-Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/brand/gjp.png', fn () => response()->file(base_path('../frontend/assets/images/company_logo.png')))->name('brand.logo');
 
 // ── HR Dashboard (harus login dulu) ────────────────
 Route::middleware('hr')->group(function () {
@@ -17,12 +19,14 @@ Route::middleware('hr')->group(function () {
     Route::delete('/attendances/{attendance}', [AttendanceController::class, 'destroy'])->name('attendances.destroy');
 
     // Kelola karyawan
-    Route::post('/employees', [App\Http\Controllers\EmployeeController::class, 'store'])->name('employees.store');
-    Route::delete('/employees/{employee}', [App\Http\Controllers\EmployeeController::class, 'destroy'])->name('employees.destroy');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+    Route::put('/employees/{employee}/face-photo', [EmployeeController::class, 'updateFacePhoto'])->name('employees.face-photo.update');
+    Route::get('/employees/{employee}/face-photo', [EmployeeController::class, 'facePhoto'])->name('employees.face-photo.show');
+    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 
     // Galeri kontrol HP kantor
-    Route::post('/gallery/{photo}/flag',    [GalleryController::class, 'flag'])->name('gallery.flag');
+    Route::post('/gallery/{photo}/flag', [GalleryController::class, 'flag'])->name('gallery.flag');
     Route::post('/gallery/{photo}/approve', [GalleryController::class, 'approve'])->name('gallery.approve');
-    Route::get('/gallery/download-zip',     [GalleryController::class, 'downloadZip'])->name('gallery.download-zip');
-    Route::delete('/gallery/{photo}',       [GalleryController::class, 'destroy'])->name('gallery.destroy');
+    Route::get('/gallery/download-zip', [GalleryController::class, 'downloadZip'])->name('gallery.download-zip');
+    Route::delete('/gallery/{photo}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
 });

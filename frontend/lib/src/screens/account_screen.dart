@@ -39,6 +39,7 @@ class _AccountScreenState extends State<AccountScreen> {
     await prefs.clear();
     AttendanceService.currentEmployeeName = null;
     AttendanceService.currentDeviceId = null;
+    AttendanceService.currentEmployeeToken = null;
     await widget.controller.removeProfilePhoto();
     widget.controller.go(AppPage.login);
   }
@@ -167,7 +168,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                           title: Text('Privasi & keamanan'),
                           subtitle: Text(
-                            'Kamera hanya pratinjau, tanpa verifikasi wajah. Foto profil pilihan Anda disimpan lokal.',
+                            'Selfie absensi dikirim untuk verifikasi wajah. Foto profil pilihan Anda tetap disimpan lokal.',
                           ),
                         ),
                       ],

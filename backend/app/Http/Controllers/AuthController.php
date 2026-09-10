@@ -6,6 +6,7 @@ use App\Models\Employee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -56,6 +57,7 @@ class AuthController extends Controller
         $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
+            'device_id' => ['nullable', 'string', 'max:100'],
         ]);
 
         $employee = Employee::where('username', $request->username)->first();
@@ -64,9 +66,14 @@ class AuthController extends Controller
             return response()->json(['message' => 'Username atau password salah'], 401);
         }
 
+        if ($request->filled('device_id') && $employee->device_id !== $request->string('device_id')->toString()) {
+            $employee->update(['device_id' => $request->string('device_id')->toString()]);
+        }
+
         return response()->json([
             'name' => $employee->name,
             'device_id' => $employee->device_id,
+            'token' => Crypt::encryptString($employee->id.'|'.now()->addHours(12)->timestamp),
         ]);
     }
 }

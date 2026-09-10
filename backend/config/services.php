@@ -6,6 +6,10 @@ return [
         'token' => env('MOBILE_API_TOKEN'),
     ],
 
+    'face' => [
+        'url' => env('FACE_SERVICE_URL', 'http://127.0.0.1:8765'),
+    ],
+
     'hr' => [
         'username' => env('HR_DASHBOARD_USERNAME'),
         'password' => env('HR_DASHBOARD_PASSWORD'),

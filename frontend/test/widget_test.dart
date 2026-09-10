@@ -12,19 +12,24 @@ import 'package:frontend/src/screens/login_screen.dart';
 import 'package:frontend/src/screens/scan_screen.dart';
 
 class LoginService extends AttendanceService {
-  bool? submittedCameraAccess;
+  List<int>? submittedSelfieBytes;
 
   @override
   Future<Map<String, dynamic>> record(
     String type, {
-    required bool cameraAccessGranted,
+    required List<int> selfieBytes,
+    required String selfieName,
   }) async {
-    submittedCameraAccess = cameraAccessGranted;
+    submittedSelfieBytes = selfieBytes;
     return {'type': type};
   }
 
   @override
-  Future<void> login(String username, String password) async {
+  Future<void> login(
+    String username,
+    String password, {
+    bool rememberUsername = false,
+  }) async {
     AttendanceService.currentEmployeeName = 'Test Employee';
   }
 }
@@ -97,7 +102,7 @@ void main() {
       MaterialApp(home: ScanScreen(controller: controller)),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Aktifkan pratinjau (opsional)'));
+    await tester.tap(find.text('Aktifkan kamera'));
     await tester.pumpAndSettle();
     expect(find.text('Kamera tidak dapat digunakan'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.arrow_back));
@@ -105,8 +110,24 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('gallery button safely handles a canceled picker', (
+    tester,
+  ) async {
+    final controller = AppController();
+    addTearDown(controller.dispose);
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(home: ScanScreen(controller: controller)),
+    );
+    await tester.tap(find.text('Pilih foto dari galeri (uji)'));
+    await tester.pumpAndSettle();
+    expect(controller.page, AppPage.login);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final denyCamera in [false, true]) {
-    testWidgets('confirm attendance with optional camera denied=$denyCamera', (
+    testWidgets('attendance requires a selfie denied=$denyCamera', (
       tester,
     ) async {
       final service = LoginService();
@@ -133,26 +154,31 @@ void main() {
         MaterialApp(home: ScanScreen(controller: controller)),
       );
       await tester.pumpAndSettle();
+      expect(find.text('Pilih foto dari galeri (uji)'), findsOneWidget);
       expect(
         cameraCalls,
         0,
         reason: 'Opening attendance must not request camera',
       );
       if (denyCamera) {
-        await tester.tap(find.text('Aktifkan pratinjau (opsional)'));
+        await tester.tap(find.text('Aktifkan kamera'));
         await tester.pumpAndSettle();
         expect(cameraCalls, 1);
         expect(
           find.text(
-            'Izin kamera ditolak. Anda tetap dapat konfirmasi absensi.',
+            'Izin kamera ditolak. Aktifkan izin untuk melanjutkan absensi.',
           ),
           findsOneWidget,
         );
       }
       await tester.tap(find.text('Konfirmasi Masuk'));
       await tester.pumpAndSettle();
-      expect(service.submittedCameraAccess, false);
-      expect(controller.page, AppPage.success);
+      expect(service.submittedSelfieBytes, isNull);
+      expect(controller.page, AppPage.scan);
+      expect(
+        find.text('Aktifkan kamera atau pilih foto dari galeri.'),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });

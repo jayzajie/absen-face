@@ -1,5 +1,8 @@
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../app.dart';
 import '../widgets.dart';
@@ -17,6 +20,8 @@ class _ScanScreenState extends State<ScanScreen> {
   String? cameraError;
   bool sending = false;
   bool startingCamera = false;
+  Uint8List? selectedPhotoBytes;
+  String? selectedPhotoName;
 
   bool get cameraReady => camera?.value.isInitialized ?? false;
 
@@ -61,24 +66,68 @@ class _ScanScreenState extends State<ScanScreen> {
 
   String _cameraMessage(String code) => switch (code) {
     'CameraAccessDenied' || 'CameraAccessDeniedWithoutPrompt' =>
-      'Izin kamera ditolak. Anda tetap dapat konfirmasi absensi.',
+      'Izin kamera ditolak. Aktifkan izin untuk melanjutkan absensi.',
     _ => 'Kamera tidak dapat digunakan',
   };
 
   Future<void> _confirm() async {
+    if (!cameraReady && selectedPhotoBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aktifkan kamera atau pilih foto dari galeri.'),
+        ),
+      );
+      return;
+    }
     setState(() => sending = true);
     try {
+      final selfie = selectedPhotoBytes == null
+          ? await camera!.takePicture()
+          : null;
       await widget.controller.submitAttendance(
-        cameraAccessGranted: cameraReady,
+        selfieBytes: selectedPhotoBytes ?? await selfie!.readAsBytes(),
+        selfieName: selectedPhotoName ?? selfie!.name,
       );
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menghubungi server: $error')),
+          SnackBar(content: Text('$error'.replaceFirst('Exception: ', ''))),
         );
         setState(() => sending = false);
       }
     }
+  }
+
+  Future<void> _pickTestPhoto() async {
+    try {
+      final photo = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        requestFullMetadata: false,
+      );
+      if (photo != null && mounted) {
+        final bytes = await photo.readAsBytes();
+        if (!mounted) return;
+        setState(() {
+          selectedPhotoBytes = bytes;
+          selectedPhotoName = photo.name;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto galeri tidak dapat dibuka.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickBundledTestPhoto(String asset, String name) async {
+    final bytes = (await rootBundle.load(asset)).buffer.asUint8List();
+    if (!mounted) return;
+    setState(() {
+      selectedPhotoBytes = bytes;
+      selectedPhotoName = name;
+    });
   }
 
   @override
@@ -101,21 +150,23 @@ class _ScanScreenState extends State<ScanScreen> {
             child: Stack(
               children: [
                 Positioned.fill(child: _cameraPreview()),
-                const Positioned(
+                Positioned(
                   top: 14,
                   left: 0,
                   right: 0,
                   child: Text(
-                    'Pratinjau kamera • tidak merekam foto atau video',
+                    selectedPhotoBytes == null
+                        ? 'Posisikan wajah di dalam bingkai'
+                        : 'Foto galeri siap diuji',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       shadows: [Shadow(color: Colors.black54, blurRadius: 4)],
                     ),
                   ),
                 ),
-                if (cameraReady)
+                if (cameraReady && selectedPhotoBytes == null)
                   Positioned(
                     top: 50,
                     left: 0,
@@ -175,22 +226,31 @@ class _ScanScreenState extends State<ScanScreen> {
                 Row(
                   children: [
                     Icon(
-                      cameraError == null
+                      selectedPhotoBytes != null
+                          ? Icons.image_outlined
+                          : cameraError == null
                           ? Icons.camera_alt_outlined
                           : Icons.error_outline,
                       size: 20,
-                      color: cameraError == null ? green : Colors.red,
+                      color: selectedPhotoBytes != null || cameraError == null
+                          ? green
+                          : Colors.red,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        cameraError ??
-                            (cameraReady
-                                ? 'Kamera aktif. Konfirmasi untuk mencatat kehadiran.'
-                                : 'Pratinjau opsional. Absensi dapat dilanjutkan tanpa kamera.'),
+                        selectedPhotoBytes != null
+                            ? 'Foto terpilih: $selectedPhotoName'
+                            : cameraError ??
+                                  (cameraReady
+                                      ? 'Kamera siap untuk verifikasi wajah.'
+                                      : 'Aktifkan kamera atau gunakan foto galeri untuk pengujian.'),
                         style: TextStyle(
                           fontSize: 12,
-                          color: cameraError == null ? muted : Colors.red,
+                          color:
+                              selectedPhotoBytes != null || cameraError == null
+                              ? muted
+                              : Colors.red,
                         ),
                       ),
                     ),
@@ -207,12 +267,51 @@ class _ScanScreenState extends State<ScanScreen> {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Tidak ada pencocokan atau verifikasi wajah',
+                        'Selfie dicocokkan dengan foto acuan. Anti-spoof belum aktif.',
                         style: TextStyle(fontSize: 11, color: muted),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: sending ? null : _pickTestPhoto,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(46),
+                    ),
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Pilih foto dari galeri (uji)'),
+                  ),
+                ),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 4,
+                    children: [
+                      TextButton(
+                        onPressed: sending
+                            ? null
+                            : () => _pickBundledTestPhoto(
+                                'assets/images/test_emp001.jpg',
+                                'test_emp001.jpg',
+                              ),
+                        child: const Text('Uji wajah cocok'),
+                      ),
+                      TextButton(
+                        onPressed: sending
+                            ? null
+                            : () => _pickBundledTestPhoto(
+                                'assets/images/test_emp002.jpg',
+                                'test_emp002.jpg',
+                              ),
+                        child: const Text('Uji wajah berbeda'),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 20),
                 PrimaryButton(
                   label: sending
@@ -229,6 +328,18 @@ class _ScanScreenState extends State<ScanScreen> {
   );
 
   Widget _cameraPreview() {
+    if (selectedPhotoBytes != null) {
+      return ColoredBox(
+        color: const Color(0xFF202522),
+        child: Image.memory(
+          selectedPhotoBytes!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          gaplessPlayback: true,
+        ),
+      );
+    }
     if (!cameraReady) {
       return Container(
         color: const Color(0xFF202522),
@@ -238,7 +349,7 @@ class _ScanScreenState extends State<ScanScreen> {
               : FilledButton.icon(
                   onPressed: _startCamera,
                   icon: const Icon(Icons.videocam_outlined),
-                  label: const Text('Aktifkan pratinjau (opsional)'),
+                  label: const Text('Aktifkan kamera'),
                 ),
         ),
       );

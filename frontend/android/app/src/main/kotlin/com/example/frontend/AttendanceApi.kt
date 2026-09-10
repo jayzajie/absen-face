@@ -10,7 +10,10 @@ class AttendanceApi {
     val deviceName: String = "${Build.MANUFACTURER} ${Build.MODEL}".take(100)
 
     fun login(username: String, password: String): String {
-        val data = post("mobile/login", JSONObject().put("username", username).put("password", password), false)
+        val data = post("mobile/login", JSONObject()
+            .put("username", username)
+            .put("password", password)
+            .put("device_id", deviceName), false)
         return data.getString("name").also {
             if (it.isBlank()) throw IOException("Respons login tidak valid.")
         }
