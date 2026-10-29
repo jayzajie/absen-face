@@ -10,7 +10,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/brand/gjp.png', fn () => response()->file(base_path('../frontend/assets/images/company_logo.png')))->name('brand.logo');
+Route::get('/brand/gjp.png', function () {
+    $path = public_path('images/company_logo.png');
+    if (!file_exists($path)) {
+        $path = base_path('../frontend-kotlin/app/src/main/res/drawable/company_logo.png');
+    }
+    return response()->file($path);
+})->name('brand.logo');
 
 // ── HR Dashboard (harus login dulu) ────────────────
 Route::middleware('hr')->group(function () {

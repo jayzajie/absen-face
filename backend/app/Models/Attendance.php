@@ -12,13 +12,10 @@ class Attendance extends Model
         'face_match_score', 'face_threshold', 'face_model_version',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'occurred_at' => 'datetime',
-            'photo_access_granted' => 'boolean',
-            'face_match_score' => 'float',
-            'face_threshold' => 'float',
-        ];
-    }
+    protected $casts = [
+        'occurred_at' => 'datetime',
+        'photo_access_granted' => 'boolean',
+        'face_match_score' => 'float',
+        'face_threshold' => 'float',
+    ];
 }

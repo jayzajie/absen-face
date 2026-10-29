@@ -20,14 +20,11 @@ class GalleryPhoto extends Model
         'flagged_by',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'taken_at' => 'datetime',
-            'flagged_at' => 'datetime',
-            'file_size' => 'integer',
-        ];
-    }
+    protected $casts = [
+        'taken_at' => 'datetime',
+        'flagged_at' => 'datetime',
+        'file_size' => 'integer',
+    ];
 
     public function isPending(): bool
     {
