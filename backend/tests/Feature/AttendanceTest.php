@@ -179,4 +179,42 @@ class AttendanceTest extends TestCase
             ->assertOk()
             ->assertHeader('content-type', 'image/png');
     }
+
+    public function test_first_login_indicates_unregistered_face_and_employee_can_register_face(): void
+    {
+        Storage::fake('local');
+        $employee = Employee::create([
+            'name' => 'Budi Santoso',
+            'username' => 'budi',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $loginResponse = $this->postJson('/api/mobile/login', [
+            'username' => 'budi',
+            'password' => 'password123',
+            'device_id' => 'budi-hp',
+        ])->assertOk()
+            ->assertJsonPath('name', 'Budi Santoso')
+            ->assertJsonPath('has_face_registered', false);
+
+        $token = $loginResponse->json('token');
+
+        // Daftarkan wajah via mobile API
+        $this->withToken($token)->post('/api/mobile/register-face', [
+            'face_photo' => UploadedFile::fake()->image('budi-face.jpg', 400, 400),
+        ])->assertOk()
+            ->assertJsonPath('has_face_registered', true);
+
+        $employee->refresh();
+        $this->assertNotNull($employee->face_photo_path);
+        Storage::disk('local')->assertExists($employee->face_photo_path);
+
+        // Login berikutnya sudah terdeteksi has_face_registered = true
+        $this->postJson('/api/mobile/login', [
+            'username' => 'budi',
+            'password' => 'password123',
+            'device_id' => 'budi-hp',
+        ])->assertOk()
+            ->assertJsonPath('has_face_registered', true);
+    }
 }

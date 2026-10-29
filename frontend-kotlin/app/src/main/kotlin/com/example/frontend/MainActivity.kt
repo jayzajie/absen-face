@@ -34,7 +34,14 @@ class MainActivity : ComponentActivity() {
                 var currentPage by remember {
                     val savedToken = prefs.getString("emp_token", null)
                     val savedName = prefs.getString("emp_name", null)
-                    mutableStateOf(if (!savedToken.isNullOrBlank() && !savedName.isNullOrBlank()) AppPage.HOME else AppPage.LOGIN)
+                    val hasFace = prefs.getBoolean("emp_has_face", true)
+                    mutableStateOf(
+                        if (!savedToken.isNullOrBlank() && !savedName.isNullOrBlank()) {
+                            if (!hasFace) AppPage.FACE_REGISTRATION else AppPage.HOME
+                        } else {
+                            AppPage.LOGIN
+                        }
+                    )
                 }
 
                 var employeeName by remember {
@@ -59,7 +66,7 @@ class MainActivity : ComponentActivity() {
                 var scanError by remember { mutableStateOf<String?>(null) }
 
                 // Back button handling
-                BackHandler(enabled = currentPage != AppPage.LOGIN && currentPage != AppPage.HOME) {
+                BackHandler(enabled = currentPage != AppPage.LOGIN && currentPage != AppPage.HOME && currentPage != AppPage.FACE_REGISTRATION) {
                     currentPage = AppPage.HOME
                 }
 
@@ -85,6 +92,7 @@ class MainActivity : ComponentActivity() {
                                             prefs.edit().apply {
                                                 putString("emp_name", response.name)
                                                 putString("emp_token", response.token)
+                                                putBoolean("emp_has_face", response.hasFaceRegistered)
                                                 if (remember) {
                                                     putString("remembered_username", user)
                                                 } else {
@@ -93,9 +101,45 @@ class MainActivity : ComponentActivity() {
                                                 apply()
                                             }
 
-                                            currentPage = AppPage.HOME
+                                            currentPage = if (!response.hasFaceRegistered) {
+                                                AppPage.FACE_REGISTRATION
+                                            } else {
+                                                AppPage.HOME
+                                            }
                                         } catch (e: Exception) {
                                             loginError = e.message ?: "Gagal masuk. Periksa koneksi atau kredensial."
+                                        } finally {
+                                            isLoading = false
+                                        }
+                                    }
+                                }
+                            )
+                        }
+
+                        AppPage.FACE_REGISTRATION -> {
+                            FaceRegistrationScreen(
+                                employeeName = employeeName,
+                                isLoading = isLoading,
+                                errorMessage = scanError,
+                                onRegisterFace = { faceBytes, fileName ->
+                                    isLoading = true
+                                    scanError = null
+                                    coroutineScope.launch {
+                                        try {
+                                            api.registerFace(
+                                                token = employeeToken,
+                                                faceBytes = faceBytes,
+                                                fileName = fileName
+                                            )
+                                            prefs.edit().putBoolean("emp_has_face", true).apply()
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                "Wajah berhasil didaftarkan! Selamat datang di GJP Absensi.",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            currentPage = AppPage.HOME
+                                        } catch (e: Exception) {
+                                            scanError = e.message ?: "Gagal mendaftarkan wajah. Pastikan foto memuat 1 wajah jelas."
                                         } finally {
                                             isLoading = false
                                         }
@@ -181,6 +225,7 @@ class MainActivity : ComponentActivity() {
                                     prefs.edit().apply {
                                         remove("emp_name")
                                         remove("emp_token")
+                                        remove("emp_has_face")
                                         apply()
                                     }
                                     employeeName = ""

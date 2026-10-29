@@ -1,12 +1,13 @@
 package com.example.frontend.data
 
 enum class AppPage {
-    LOGIN, HOME, SCAN, HISTORY, IZIN, ACCOUNT, SUCCESS
+    LOGIN, FACE_REGISTRATION, HOME, SCAN, HISTORY, IZIN, ACCOUNT, SUCCESS
 }
 
 data class LoginResponse(
     val name: String,
-    val token: String
+    val token: String,
+    val hasFaceRegistered: Boolean = false
 )
 
 data class AttendanceResult(

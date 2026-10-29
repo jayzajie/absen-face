@@ -51,10 +51,49 @@ class AttendanceApi {
             val json = JSONObject(body)
             val name = json.optString("name")
             val token = json.optString("token")
+            val hasFace = json.optBoolean("has_face_registered", false)
             if (token.isBlank()) {
                 throw IOException("Token login tidak diterima dari server.")
             }
-            LoginResponse(name = name, token = token)
+            LoginResponse(name = name, token = token, hasFaceRegistered = hasFace)
+        }
+    }
+
+    suspend fun registerFace(
+        token: String,
+        faceBytes: ByteArray,
+        fileName: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        val base = BuildConfig.API_URL.trimEnd('/')
+        val imageMediaType = "image/jpeg".toMediaType()
+
+        val multipartBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart(
+                "face_photo",
+                fileName,
+                faceBytes.toRequestBody(imageMediaType)
+            )
+            .build()
+
+        val request = Request.Builder()
+            .url("$base/mobile/register-face")
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer $token")
+            .post(multipartBody)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            val body = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+                val errorMsg = try {
+                    JSONObject(body).optString("message", "Gagal mendaftarkan wajah ($response.code).")
+                } catch (_: Exception) {
+                    "Gagal mendaftarkan wajah ($response.code)."
+                }
+                throw IOException(errorMsg)
+            }
+            true
         }
     }
 
